@@ -1,0 +1,232 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <world name="robotic_arm_world">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="libignition-gazebo-physics-system.so" name="ignition::gazebo::systems::Physics"/>
+    <plugin filename="libignition-gazebo-user-commands-system.so" name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="libignition-gazebo-scene-broadcaster-system.so" name="ignition::gazebo::systems::SceneBroadcaster"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>1000</range><constant>0.9</constant><linear>0.01</linear><quadratic>0.001</quadratic></attenuation>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><plane><normal>0 0 1</normal></plane></geometry></collision>
+        <visual name="visual"><geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry><material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse><specular>0.8 0.8 0.8 1</specular></material></visual>
+      </link>
+    </model>
+
+    <model name="robotic_arm" canonical_link="base">
+      <pose>0 0 0 0 0 0</pose> <!-- Place base directly on ground plane -->
+
+      <!-- Base Link -->
+      <link name="base">
+        <pose>0 0 0.1 0 0 0</pose> <!-- Center of base cylinder at Z=0.1 -->
+        <inertial><mass>2.0</mass><inertia><ixx>0.02</ixx><iyy>0.02</iyy><izz>0.04</izz></inertia></inertial>
+        <visual name="base_visual">
+          <geometry><cylinder><radius>0.15</radius><length>0.2</length></cylinder></geometry>
+          <material><ambient>0.4 0.4 0.4 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse><specular>0.1 0.1 0.1 1</specular></material> <!-- Grey -->
+        </visual>
+        <collision name="base_collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.2</length></cylinder></geometry>
+        </collision>
+        <!-- Visual for Yaw Joint Housing -->
+         <visual name="yaw_joint_visual">
+           <pose>0 0 0.2 0 0 0</pose> <!-- Top of base cylinder -->
+           <geometry><cylinder><radius>0.08</radius><length>0.04</length></cylinder></geometry>
+           <material><ambient>0.8 0.8 0.1 1</ambient><diffuse>0.9 0.9 0.1 1</diffuse><specular>0.5 0.5 0.1 1</specular></material> <!-- Yellow -->
+         </visual>
+      </link>
+
+      <!-- Shoulder Yaw Link (Connects Base Yaw to Shoulder Pitch) -->
+      <link name="shoulder_yaw_link">
+        <!-- Positioned by Joint 1 -->
+        <pose>0 0 0.22 0 0 0</pose> <!-- Centered on yaw joint visual -->
+        <inertial><mass>0.5</mass><inertia><ixx>0.005</ixx><iyy>0.005</iyy><izz>0.005</izz></inertia></inertial>
+        <!-- This link is mostly just for the shoulder pitch joint mount -->
+        <visual name="shoulder_pitch_mount">
+           <!-- A block where the upper arm attaches -->
+           <pose>0.0 0 0.05 0 0 0 </pose> <!-- Offset slightly vertically -->
+           <geometry><box><size>0.06 0.15 0.1</size></box></geometry>
+           <material><ambient>0.1 0.1 0.7 1</ambient><diffuse>0.2 0.2 0.8 1</diffuse><specular>0.1 0.1 0.5 1</specular></material> <!-- Blue -->
+        </visual>
+         <collision name="shoulder_pitch_mount_collision">
+           <pose>0.0 0 0.05 0 0 0</pose>
+           <geometry><box><size>0.06 0.15 0.1</size></box></geometry>
+         </collision>
+          <!-- Visual for Pitch Joint Cylinder -->
+         <visual name="shoulder_pitch_joint_visual">
+           <pose>0 0 0.05 1.5708 0 0</pose> <!-- Centered in the mount, rotated along Y -->
+           <geometry><cylinder><radius>0.05</radius><length>0.18</length></cylinder></geometry>
+           <material><ambient>0.8 0.8 0.1 1</ambient><diffuse>0.9 0.9 0.1 1</diffuse><specular>0.5 0.5 0.1 1</specular></material> <!-- Yellow -->
+         </visual>
+      </link>
+
+      <!-- Upper Arm Link -->
+      <link name="upper_arm">
+        <!-- Positioned by Joint 2 -->
+        <pose>0 0 0.27 0 0 0</pose> <!-- Approximate initial position -->
+        <inertial><mass>1.0</mass><inertia><ixx>0.01</ixx><iyy>0.01</iyy><izz>0.01</izz></inertia></inertial>
+        <visual name="upper_arm_visual">
+          <!-- Center the visual along its length -->
+          <pose>0 0 0.25 0 0 0</pose> <!-- Offset from joint axis along Z -->
+          <geometry><box><size>0.08 0.08 0.5</size></box></geometry>
+          <material><ambient>0.1 0.1 0.7 1</ambient><diffuse>0.2 0.2 0.8 1</diffuse><specular>0.1 0.1 0.5 1</specular></material> <!-- Blue -->
+        </visual>
+        <collision name="upper_arm_collision">
+           <pose>0 0 0.25 0 0 0</pose>
+           <geometry><box><size>0.08 0.08 0.5</size></box></geometry>
+        </collision>
+        <!-- Visual for Elbow Joint Housing -->
+        <visual name="elbow_joint_visual">
+           <pose>0 0 0.5 1.5708 0 0</pose> <!-- At the end of upper arm visual, rotated -->
+           <geometry><cylinder><radius>0.05</radius><length>0.12</length></cylinder></geometry>
+           <material><ambient>0.8 0.8 0.1 1</ambient><diffuse>0.9 0.9 0.1 1</diffuse><specular>0.5 0.5 0.1 1</specular></material> <!-- Yellow -->
+         </visual>
+      </link>
+
+      <!-- Forearm Link -->
+      <link name="forearm">
+        <!-- Positioned by Joint 3 -->
+        <pose>0 0 0.77 0 0 0</pose> <!-- Approximate initial position -->
+         <inertial><mass>0.8</mass><inertia><ixx>0.008</ixx><iyy>0.008</iyy><izz>0.008</izz></inertia></inertial>
+         <visual name="forearm_visual">
+           <!-- Extend along X from the elbow joint -->
+           <pose>0.2 0 0 0 0 0</pose>
+           <geometry><box><size>0.4 0.07 0.07</size></box></geometry>
+           <material><ambient>0.1 0.1 0.7 1</ambient><diffuse>0.2 0.2 0.8 1</diffuse><specular>0.1 0.1 0.5 1</specular></material> <!-- Blue -->
+         </visual>
+          <collision name="forearm_collision">
+            <pose>0.2 0 0 0 0 0</pose>
+            <geometry><box><size>0.4 0.07 0.07</size></box></geometry>
+          </collision>
+      </link>
+
+       <!-- Gripper Base Link (attached to forearm end) -->
+      <link name="gripper_base">
+         <pose>0.4 0 0.77 0 0 0</pose> <!-- Approx Initial Position, determined by joint -->
+         <inertial><mass>0.1</mass><inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia></inertial>
+         <visual name="gripper_base_visual">
+           <geometry><box><size>0.04 0.1 0.04</size></box></geometry>
+           <material><ambient>0.4 0.4 0.4 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse><specular>0.1 0.1 0.1 1</specular></material> <!-- Grey -->
+         </visual>
+         <collision name="gripper_base_collision">
+           <geometry><box><size>0.04 0.1 0.04</size></box></geometry>
+         </collision>
+      </link>
+
+      <!-- Left Finger Link -->
+      <link name="left_finger">
+        <pose>0.44 0.05 0.77 0 0 0</pose> <!-- Approx Initial Position -->
+         <inertial><mass>0.05</mass><inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia></inertial>
+        <visual name="left_finger_visual">
+          <pose>0.04 0 0 0 0 0</pose>
+          <geometry><box><size>0.08 0.015 0.03</size></box></geometry>
+           <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse><specular>0.1 0.1 0.1 1</specular></material> <!-- Lighter Grey -->
+        </visual>
+        <collision name="left_finger_collision">
+          <pose>0.04 0 0 0 0 0</pose>
+           <geometry><box><size>0.08 0.015 0.03</size></box></geometry>
+        </collision>
+      </link>
+
+      <!-- Right Finger Link -->
+       <link name="right_finger">
+         <pose>0.44 -0.05 0.77 0 0 0</pose> <!-- Approx Initial Position -->
+         <inertial><mass>0.05</mass><inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia></inertial>
+         <visual name="right_finger_visual">
+           <pose>0.04 0 0 0 0 0</pose>
+           <geometry><box><size>0.08 0.015 0.03</size></box></geometry>
+           <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse><specular>0.1 0.1 0.1 1</specular></material> <!-- Lighter Grey -->
+         </visual>
+         <collision name="right_finger_collision">
+           <pose>0.04 0 0 0 0 0</pose>
+           <geometry><box><size>0.08 0.015 0.03</size></box></geometry>
+         </collision>
+       </link>
+
+      <!-- === JOINTS === -->
+
+      <!-- Joint 1: Base Yaw -->
+      <joint name="base_to_shoulder_yaw" type="revolute">
+        <parent>base</parent>
+        <child>shoulder_yaw_link</child>
+        <pose>0 0 0.2 0 0 0</pose> <!-- Joint axis Z at top of base -->
+        <axis>
+          <xyz>0 0 1</xyz> <!-- Rotation around Z -->
+          <limit><lower>-2.9</lower><upper>2.9</upper></limit>
+          <dynamics><damping>0.2</damping><friction>0.1</friction></dynamics>
+        </axis>
+      </joint>
+
+      <!-- Joint 2: Shoulder Pitch -->
+      <joint name="shoulder_pitch" type="revolute">
+        <parent>shoulder_yaw_link</parent>
+        <child>upper_arm</child>
+        <!-- Place joint axis relative to PARENT (shoulder_yaw_link) -->
+        <pose>0 0 0.05 0 0 0</pose> <!-- Aligned with shoulder pitch visual -->
+        <axis>
+          <xyz>0 1 0</xyz> <!-- Rotation around Y -->
+          <limit><lower>-1.57</lower><upper>2.0</upper></limit>
+          <dynamics><damping>0.2</damping><friction>0.1</friction></dynamics>
+          <initial_position>0.5</initial_position> <!-- Start slightly raised -->
+        </axis>
+      </joint>
+
+      <!-- Joint 3: Elbow Pitch -->
+      <joint name="elbow_pitch" type="revolute">
+        <parent>upper_arm</parent>
+        <child>forearm</child>
+        <!-- Place joint axis relative to PARENT (upper_arm) -->
+        <pose>0 0 0.5 0 0 0</pose> <!-- At the end of upper_arm visual -->
+        <axis>
+          <xyz>0 1 0</xyz> <!-- Rotation around Y -->
+          <limit><lower>-2.5</lower><upper>2.5</upper></limit>
+          <dynamics><damping>0.2</damping><friction>0.1</friction></dynamics>
+           <initial_position>1.0</initial_position> <!-- Start bent -->
+        </axis>
+      </joint>
+
+      <!-- Joint 4: Fixed Wrist -->
+       <joint name="forearm_to_gripper_base" type="fixed">
+        <parent>forearm</parent>
+        <child>gripper_base</child>
+        <pose>0.4 0 0 0 0 0</pose> <!-- At end of forearm visual -->
+      </joint>
+
+      <!-- Joint 5: Left Finger Prismatic -->
+      <joint name="gripper_base_to_left_finger" type="prismatic">
+        <parent>gripper_base</parent>
+        <child>left_finger</child>
+        <pose>0 0.05 0 0 0 0</pose> <!-- Offset on +Y relative to gripper base -->
+        <axis>
+          <xyz>0 1 0</xyz> <!-- Slide along Y -->
+          <limit><lower>0</lower><upper>0.03</upper></limit>
+          <dynamics><damping>1.0</damping><friction>1.0</friction></dynamics>
+        </axis>
+      </joint>
+
+       <!-- Joint 6: Right Finger Prismatic -->
+       <joint name="gripper_base_to_right_finger" type="prismatic">
+         <parent>gripper_base</parent>
+         <child>right_finger</child>
+         <pose>0 -0.05 0 0 0 0</pose> <!-- Offset on -Y relative to gripper base -->
+         <axis>
+           <xyz>0 -1 0</xyz> <!-- Slide along -Y -->
+           <limit><lower>0</lower><upper>0.03</upper></limit>
+           <dynamics><damping>1.0</damping><friction>1.0</friction></dynamics>
+         </axis>
+       </joint>
+
+    </model>
+  </world>
+</sdf>

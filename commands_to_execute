@@ -1,0 +1,35 @@
+terminal one:
+
+cd four_ws_ros2
+colcon build
+
+in dir four_ws_ros2
+
+source install/setup.bash
+ros2 launch gazebo_simulation robot_sim.launch.py
+
+terminal two:
+
+in dir four_ws_ros2
+
+source ~/four_ws_ros2/install/setup.bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+
+
+
+ros2 topic list
+ros2 topic echo /cmd_vel
+ros2 topic info /cmd_vel
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/forward_velocity_controller/commands
+
+
+controller joints check:
+ros2 param get /forward_velocity_controller joints
+
+
+ros2 topic pub /forward_velocity_controller/commands std_msgs/msg/Float64MultiArray "{data: [1.0, 1.0, 1.0, 1.0]}"
+
+controllers:
+joint_state_broadcaster - Publishes joint states (position, etc)
+forward_position_controller -Controls joint positions
+forward_velocity_controller -Controls joint velocities
